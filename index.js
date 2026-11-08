@@ -88,7 +88,7 @@ export function customRandom(alphabet, defaultSize, getRandom) {
 // https://github.com/orhanayd/nope-id
 
 // Maximum size of the pre-generated string pool in `customAlphabet()`.
-const POOL_MAX = GET_RANDOM_LIMIT / 2
+const POOL_MAX = GET_RANDOM_LIMIT / 64
 
 export function customAlphabet(alphabet, defaultSize = 21) {
   if (
