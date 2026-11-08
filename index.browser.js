@@ -81,7 +81,7 @@ export let nanoid = (size = 21) => {
   while (size--) {
     // The following mask reduces the random byte in the 0-255 value
     // range to the 0-63 value range.
-    id += urlAlphabet[bytes[size] & 63]
+    id += urlAlphabet[63 & bytes[size]]
   }
   return id
 }
