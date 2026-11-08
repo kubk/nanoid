@@ -94,6 +94,9 @@ let rows = names.map(name => {
   let median = quantile(ratios, 0.5)
   let low = quantile(ratios, 0.25)
   let high = quantile(ratios, 0.75)
+  process.stderr.write(
+    `DIAG\t${name}\t${percent(low)}\t${percent(median)}\t${percent(high)}\n`
+  )
   let verdict = 'same'
   if (low > 1 && median > 1 + THRESHOLD) verdict = '🟢 faster'
   if (high < 1 && median < 1 - THRESHOLD) {

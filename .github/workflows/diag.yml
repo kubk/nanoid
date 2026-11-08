@@ -1,0 +1,34 @@
+name: Benchmark diagnostics
+on:
+  push:
+    branches:
+      - ci-benchmark-diag
+permissions:
+  contents: read
+jobs:
+  diag:
+    name: Runner ${{ matrix.runner }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/setup@a0881977cd8ea73b1ed212236c99ca10dcc80cf4 # v3.1.1
+        with:
+          version: 12
+          runtime: node@26
+      - run: pnpm install --ignore-scripts
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: base
+          persist-credentials: false
+      - run: grep -m1 'model name' /proc/cpuinfo; nproc
+      - name: 10 separate A/A processes
+        run: |
+          for p in $(seq 1 10); do
+            node test/compare-benchmark.js ./base 2>&1 >/dev/null | grep DIAG | sed "s/^DIAG/P$p/" || true
+          done
