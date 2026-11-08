@@ -132,7 +132,7 @@ export function customAlphabet(alphabet, defaultSize = 21) {
     // and pool offset pollution
     size |= 0
     if (size < 0) throw new RangeError('Wrong ID size')
-    if (size === 0) return ''
+    if (!size) return ''
     if (poolOffset + size > pool.length) {
       let target = Math.max(poolNext, size)
       poolNext = Math.min(target * 16, POOL_MAX)
