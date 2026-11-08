@@ -133,7 +133,7 @@ export function customAlphabet(alphabet, defaultSize = 21) {
     size |= 0
     if (size < 0) throw new RangeError('Wrong ID size')
     if (size === 0) return ''
-    if (poolOffset + size > pool.length) {
+    if (pool.length < poolOffset + size) {
       let target = Math.max(poolNext, size)
       poolNext = Math.min(target * 16, POOL_MAX)
       let buffer = Buffer.allocUnsafe(target)
