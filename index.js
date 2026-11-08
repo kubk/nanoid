@@ -166,8 +166,9 @@ export function customAlphabet(alphabet, defaultSize = 21) {
       pool = buffer.toString('latin1')
       poolOffset = 0
     }
+    let start = poolOffset
     poolOffset += size
-    return pool.substring(poolOffset - size, poolOffset)
+    return pool.substring(start, poolOffset)
   }
 }
 
