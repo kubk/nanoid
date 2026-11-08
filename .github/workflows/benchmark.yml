@@ -4,6 +4,14 @@ on:
     tags:
       - '*'
   pull_request:
+    paths:
+      - 'index.js'
+      - 'index.browser.js'
+      - 'non-secure/**'
+      - 'url-alphabet/**'
+      - 'test/benchmark.js'
+      - 'test/compare-benchmark.js'
+      - '.github/workflows/benchmark.yml'
 permissions:
   contents: read
 jobs:
@@ -33,4 +41,4 @@ jobs:
           persist-credentials: false
       - name: Compare with the base branch
         if: github.event_name == 'pull_request'
-        run: node ./test/compare-benchmark.js ./base | tee -a "$GITHUB_STEP_SUMMARY"
+        run: node ./test/compare-benchmark.js ./base

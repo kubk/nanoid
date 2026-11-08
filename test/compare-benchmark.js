@@ -87,6 +87,7 @@ function formatOps(value) {
   return Math.round(value).toLocaleString('en-US')
 }
 
+let slower = []
 let rows = names.map(name => {
   let { base, head } = opsPerSec[name]
   let ratios = head.map((value, i) => value / base[i])
@@ -95,7 +96,10 @@ let rows = names.map(name => {
   let high = quantile(ratios, 0.75)
   let verdict = 'same'
   if (low > 1 && median > 1 + THRESHOLD) verdict = '🟢 faster'
-  if (high < 1 && median < 1 - THRESHOLD) verdict = '🔴 slower'
+  if (high < 1 && median < 1 - THRESHOLD) {
+    verdict = '🔴 slower'
+    slower.push(`${name} is ${percent(median).slice(1)} slower`)
+  }
   return [
     name,
     formatOps(quantile(base, 0.5)),
@@ -118,3 +122,10 @@ let lines = [
   ''
 ]
 process.stdout.write(lines.join('\n'))
+
+if (slower.length > 0) {
+  let prefix = process.env.GITHUB_ACTIONS ? '::error::' : ''
+  for (let message of slower) process.stdout.write(`\n${prefix}${message}`)
+  process.stdout.write('\n')
+  process.exit(1)
+}
