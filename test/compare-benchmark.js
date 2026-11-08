@@ -11,6 +11,8 @@
 
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { setFlagsFromString } from 'node:v8'
+import { runInNewContext } from 'node:vm'
 import { Bench } from 'tinybench'
 
 let baseDir = process.argv[2]
@@ -19,8 +21,8 @@ if (!baseDir) {
   process.exit(1)
 }
 
-const ROUNDS = Number(process.env.BENCHMARK_ROUNDS ?? 12)
-const ROUND_TIME = Number(process.env.BENCHMARK_TIME ?? 200)
+const ROUNDS = Number(process.env.BENCHMARK_ROUNDS ?? 30)
+const ROUND_TIME = Number(process.env.BENCHMARK_TIME ?? 100)
 // Smaller diffs are usually just a noise of the machine
 const THRESHOLD = Number(process.env.BENCHMARK_THRESHOLD ?? 2) / 100
 // Fast functions take less time than reading the timer,
@@ -28,6 +30,10 @@ const THRESHOLD = Number(process.env.BENCHMARK_THRESHOLD ?? 2) / 100
 const N = 1000
 // Keep the results, so V8 cannot skip creating the IDs
 let out = []
+
+// Garbage from one task should not be collected during the next task
+setFlagsFromString('--expose-gc')
+let gc = runInNewContext('gc')
 
 async function load(dir) {
   let file = name => import(pathToFileURL(join(resolve(dir), name)).href)
@@ -57,6 +63,7 @@ for (let name of names) opsPerSec[name] = { base: [], head: [] }
 for (let round = 0; round < ROUNDS; round++) {
   let bench = new Bench({
     iterations: 1,
+    setup: () => gc(),
     time: ROUND_TIME,
     // JIT stays warm between rounds
     warmup: round === 0
