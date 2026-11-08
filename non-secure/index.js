@@ -23,7 +23,7 @@ export let nanoid = (size = 21) => {
   let i = size | 0
   while (i-- > 0) {
     // `| 0` is more compact and faster than `Math.floor()`.
-    id += urlAlphabet[(Math.random() * 64) | 0]
+    id += urlAlphabet[(64 * Math.random()) | 0]
   }
   return id
 }
