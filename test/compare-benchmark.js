@@ -1,14 +1,5 @@
 #!/usr/bin/env node
 
-// Compares Nano ID speed between the current files and other Nano ID copy
-// (like the PR base branch on CI):
-//
-//   node test/compare-benchmark.js ../nanoid-main
-//
-// CI runners are noisy, so both versions are loaded in the same process
-// and measured in short alternating rounds. Each round compares versions
-// right next to each other, so a slow moment on the runner affects both.
-
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { setFlagsFromString } from 'node:v8'
@@ -23,15 +14,10 @@ if (!baseDir) {
 
 const ROUNDS = Number(process.env.BENCHMARK_ROUNDS ?? 30)
 const ROUND_TIME = Number(process.env.BENCHMARK_TIME ?? 100)
-// Smaller diffs are usually just a noise of the machine
 const THRESHOLD = Number(process.env.BENCHMARK_THRESHOLD ?? 2) / 100
-// Fast functions take less time than reading the timer,
-// so every task calls the function N times in a loop.
 const N = 1000
-// Keep the results, so V8 cannot skip creating the IDs
 let out = []
 
-// Garbage from one task should not be collected during the next task
 setFlagsFromString('--expose-gc')
 let gc = runInNewContext('gc')
 
@@ -65,10 +51,8 @@ for (let round = 0; round < ROUNDS; round++) {
     iterations: 1,
     setup: () => gc(),
     time: ROUND_TIME,
-    // JIT stays warm between rounds
     warmup: round === 0
   })
-  // Alternate the order to avoid advantage of the first task
   let order = round % 2 === 0 ? ['base', 'head'] : ['head', 'base']
   for (let name of names) {
     for (let version of order) {
@@ -105,7 +89,6 @@ function formatOps(value) {
 
 let rows = names.map(name => {
   let { base, head } = opsPerSec[name]
-  // Compare versions inside the same round
   let ratios = head.map((value, i) => value / base[i])
   let median = quantile(ratios, 0.5)
   let low = quantile(ratios, 0.25)
@@ -118,23 +101,20 @@ let rows = names.map(name => {
     formatOps(quantile(base, 0.5)),
     formatOps(quantile(head, 0.5)),
     percent(median),
-    `${percent(low)} … ${percent(high)}`,
     verdict
   ]
 })
 
-let header = ['', 'base ops/sec', 'PR ops/sec', 'diff', 'noise', '']
+let header = ['', 'base ops/sec', 'PR ops/sec', 'diff', '']
 let lines = [
   '## Benchmark',
   '',
   `| ${header.join(' | ')} |`,
-  '| :-- | --: | --: | --: | :-: | :-- |',
+  '| :-- | --: | --: | --: | :-- |',
   ...rows.map(row => `| ${row.join(' | ')} |`),
   '',
   `Median of ${ROUNDS} alternating rounds on Node.js ${process.version}. ` +
-    '“Noise” is the middle half of per-round diffs. ' +
-    'The change is marked only when the whole range is on one side ' +
-    `of zero and the diff is bigger than ${THRESHOLD * 100}%.`,
+    `Changes smaller than ${THRESHOLD * 100}% are marked as the same.`,
   ''
 ]
 process.stdout.write(lines.join('\n'))
