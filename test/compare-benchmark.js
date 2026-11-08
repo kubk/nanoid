@@ -12,9 +12,9 @@ if (!baseDir) {
   process.exit(1)
 }
 
-const ROUNDS = Number(process.env.BENCHMARK_ROUNDS ?? 30)
-const ROUND_TIME = Number(process.env.BENCHMARK_TIME ?? 100)
-const THRESHOLD = Number(process.env.BENCHMARK_THRESHOLD ?? 2) / 100
+const ROUNDS = 30
+const ROUND_TIME = 100
+const THRESHOLD = 0.02
 const N = 1000
 let out = []
 
