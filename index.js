@@ -156,7 +156,7 @@ export function customAlphabet(alphabet, defaultSize = 21) {
           fillRandom(randomBytes)
           for (let i = 0; i < randomBytes.length; i++) {
             let index = randomBytes[i] & mask
-            if (index < alphabetLen) {
+            if (alphabetLen > index) {
               buffer[accepted++] = charCodes[index]
               if (accepted === target) break
             }
